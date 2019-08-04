@@ -16,8 +16,12 @@ wlan = WLAN(mode=WLAN.STA)
 wlan_ssid = "ASUS_for_ICT"
 wlan_pwd  = "ictadmin"
 """
+"""
 wlan_ssid = "KDS_A"
 wlan_pwd  = "jo123thai"
+"""
+wlan_ssid = "SARAWUT_2.4G"
+wlan_pwd = "0891190312"
 wlan.connect(wlan_ssid, auth=(WLAN.WPA2, wlan_pwd), timeout=5000)
 while not wlan.isconnected():  
     machine.idle()

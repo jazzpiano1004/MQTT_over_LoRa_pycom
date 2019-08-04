@@ -51,7 +51,7 @@ _LORA_PKG_ACK_FORMAT = "BBB"
 
 
 # MQTT Initialize
-MQTT_SERVER = "192.168.1.136"
+MQTT_SERVER = "192.168.1.11"
 MQTT_PORT = 1883
 MQTT_LORAGATEWAY_ID = str(machine.rng())
 
@@ -61,20 +61,24 @@ def sub_cb(topic, msg):          # sub_cb means "callback subroutine"
 client = MQTTClient(client_id=MQTT_LORAGATEWAY_ID, server=MQTT_SERVER, port=MQTT_PORT, ssl=False)
 client.set_callback(sub_cb)
 client.connect()
-client.subscribe(topic="LoRa_ICTLab", qos=1)
 
-def mqtt_publish_from_dictionary(dict_object, dict_name):
+
+
+def mqtt_publish_encoding(device_dict, topic_name):
     # message per second for mqtt server that can handle
-    mqtt_message_rate = 0.5
+    mqtt_message_rate = 1
 
-    # publish all keys in dictionary
-    for key, value in dict_object.items():
-        mqtt_topic = "{}/".format(dict_name) + key
-        mqtt_msg = value 
-        print(mqtt_topic + ": " + mqtt_msg)
-        client.publish(topic=mqtt_topic, msg=mqtt_msg, qos=1, retain=False)
-        client.check_msg()
-        time.sleep(mqtt_message_rate)
+    # publish all keys in dictionary with 1 string
+    mqtt_topic = "{}".format(topic_name)
+    mqtt_msg = ""
+    for key, value in device_dict.items():
+        mqtt_msg =  mqtt_msg + "{}:{},".format(key, value)
+    mqtt_msg = mqtt_msg[0:-1]
+    
+    print(mqtt_topic + "->" + mqtt_msg)
+    client.publish(topic=mqtt_topic, msg=mqtt_msg, qos=1, retain=False)
+    client.check_msg()
+    time.sleep(mqtt_message_rate)
 
 
 
@@ -112,8 +116,8 @@ def thread_mqtt_publish():
     try:
         while True:
             print("Publishing...")
-            mqtt_publish_from_dictionary(dict_node1, "node1")
-            mqtt_publish_from_dictionary(dict_node2, "node2")
+            mqtt_publish_encoding(dict_node1, "ICTLab_LoRa/node1")
+            mqtt_publish_encoding(dict_node2, "ICTLab_LoRa/node2")
             print("DONE")
             #client.check_msg()
             time.sleep(5)
