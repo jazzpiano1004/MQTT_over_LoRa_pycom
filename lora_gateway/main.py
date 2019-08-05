@@ -14,6 +14,10 @@ dict_node1 = {}
 dict_node2 = {}
 
 def lora_dictionary_update(lora_message="", lora_dict={}):
+    """ This function is used to update all tags of LoRa node device by using dictionary
+        @argument : lora_message (LoRa messgae from node device)
+                  : lora_dict (dictionary of node device)
+    """
     # Split comma as for each value field in LoRa message
     # split_comma = [( : ), ( : ), ...]
     split_comma = lora_message.split(",")
@@ -65,6 +69,10 @@ client.connect()
 
 
 def mqtt_publish_encoding(device_dict, topic_name):
+    """ This function is used to encode mqtt publish message by using LoRa node device's dictionary
+        @argument : device_dict (dictionary of node device)
+                  : topic_name (topic name for mqtt publishing)
+    """
     # message per second for mqtt server that can handle
     mqtt_message_rate = 1
 

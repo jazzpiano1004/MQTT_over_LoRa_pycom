@@ -1,6 +1,9 @@
+
 import paho.mqtt.client as mqtt
 import time
 
+#####################################################################################
+# MQTT Initialize 
 mqtt_client = mqtt.Client()
 MQTT_SERVER = "192.168.1.11"
 MQTT_PORT = 1883
@@ -19,12 +22,14 @@ def sub_callback(mqttc, obj, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 mqtt_client.on_subscribe = sub_callback
 topic = "ICTLab_LoRa/node2"
-
+#####################################################################################
 
 
 def mqtt_subscribe_decoding(mqtt_sub_message):
-    # This function will decode subscribe message into topic's dictionary which contain all tags
-     
+    """ This function is used to decode a subscribed message into topic's dictionary which contain all tags of lora device.
+        @argument : mqtt_sub_message (mqtt subscribe message)
+        @return : topic_dict (dictionary of a given subscribed topic)
+    """
     topic_dict = {}
     # Split comma as for each value field in LoRa message
     # split_comma = [( : ), ( : ), ...]
