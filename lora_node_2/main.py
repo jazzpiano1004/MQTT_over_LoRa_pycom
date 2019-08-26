@@ -19,8 +19,18 @@ py = Pytrack()
 acc = LIS2HH12()
 gps = L76GNSS(py, timeout=30)
 # accelerometer from PyTrack
-acc_pitch = 0
-acc_roll  = 0
+acc_x = 0
+acc_y = 0
+acc_z = 0
+acc_x_delay1 = 0
+acc_y_delay1 = 0
+acc_z_delay1 = 0
+# Smoothing function for accelerometer value
+def smoothing_filter_iir(x=0, y_delay=0):
+    a = 0.8 # smoothing factor
+    y = a*x + (1 - a)*y_delay
+    return y
+
 # GPS coordinate from PyTrack
 gps_latitude = None
 gps_longtitude = None
@@ -53,8 +63,9 @@ def thread_lora_send_package():
     while True:
         # Package send containing a simple string
         msg = ""
-        msg = msg + "acc_pitch:{}".format(acc_pitch) + ","
-        msg = msg + "acc_roll:{}".format(acc_roll) + ","
+        msg = msg + "acc_x:{}".format(acc_x) + ","
+        msg = msg + "acc_y:{}".format(acc_y) + ","
+        msg = msg + "acc_z:{}".format(acc_z) + ","
         msg = msg + "gps_latitude:{}".format(gps_latitude) + ","
         msg = msg + "gps_longtitude:{}".format(gps_longtitude)
         pkg = struct.pack(_LORA_PKG_FORMAT % len(msg), DEVICE_ID, len(msg), msg)
@@ -108,15 +119,29 @@ def thread_blinking_led():
         time.sleep(0.6)
 
 def thread_read_accelerometer():
-    global acc_pitch
-    global acc_roll
+    global acc_x
+    global acc_y
+    global acc_z
+    global acc_x_delay1
+    global acc_y_delay1
+    global acc_z_delay1
+
     while True:
-        acc_pitch = acc.pitch()
-        acc_roll  = acc.roll()
+        # Read acceleration of x, y, z axis
+        acc_x, acc_y, acc_z = acc.acceleration()
+
+        # Low-pass filter using IIR filter
+        acc_x = smoothing_filter_iir(x=acc_x, y_delay=acc_x_delay1)
+        acc_x_delay1 = acc_x
+        acc_y = smoothing_filter_iir(x=acc_y, y_delay=acc_y_delay1)
+        acc_y_delay1 = acc_y
+        acc_z = smoothing_filter_iir(x=acc_z, y_delay=acc_z_delay1)
+        acc_z_delay1 = acc_z
+
         lock.acquire()
-        print("pitch={}, roll={}".format(acc_pitch, acc_roll))
+        print("x={}, y={}, z={}".format(acc_x, acc_y, acc_z))
         lock.release()
-        time.sleep(1.5)
+        time.sleep(0.1)
 
 def thread_read_gps():
     while True:
