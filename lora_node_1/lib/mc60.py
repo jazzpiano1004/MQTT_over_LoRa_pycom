@@ -1,5 +1,5 @@
 import pycom
-import time
+import utime
 import ubinascii
 from machine import Pin
 from machine import UART
@@ -50,9 +50,9 @@ class MC60():
     def power_on_module(self):
         # Power on the module by using pulse signal (4-5 second)
         self.pwr_on.value(1)
-        time.sleep(5)
+        utime.sleep(5)
         self.pwr_on.value(0)
-        time.sleep(1)
+        utime.sleep(3)
     
     def send_command(self, command=MC60_CMD_AT):
         # Send AT command to the module, if command is correct
@@ -67,7 +67,7 @@ class MC60():
         # Wait for module to acknowlege with message "OK\r\n"
         while ack_complete == 0 and cnt_timeout < timeout:
             if self.uart.any() > 0:
-                time.sleep(0.1)
+                utime.sleep(0.1)
                 cnt_timeout = 0
 
                 # UART readline
@@ -86,7 +86,7 @@ class MC60():
                     ack_message = ack_message + line_str + '\n'
 
             else:
-                time.sleep(0.001)
+                utime.sleep(0.001)
                 cnt_timeout = cnt_timeout + 1
 
         if cnt_timeout == timeout:
@@ -105,7 +105,9 @@ class MC60():
         """
             This function is used to turn on power of gnss (gps) chip in mc60 module
         """
+        # Set power supply enable for gps 
         ack_message = self.send_AT_command(command=MC60_CMD_QGNSSC, timeout=2000)
+        # Read power supply enable status
         ack_message = self.send_AT_command(command=MC60_CMD_QGNSSC_RD, timeout=2000)
         print(ack_message)
 
@@ -126,6 +128,7 @@ class MC60():
             gpgll_section = gnss_message[gpgll_startindex : -1]
             gpgll_section = gpgll_section[len("$GNGLL,"): -1]
             gpgll_section_split = gpgll_section.split(',')
+            #print(gpgll_section_split)
 
             # Calculate latitude, longtitude
             latitude_pos  =  float(gpgll_section_split[0])
