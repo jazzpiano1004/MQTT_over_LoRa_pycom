@@ -1,6 +1,7 @@
 import socket
 import struct
 import ubinascii
+import ujson
 import time
 from network import LoRa
 import pycom
@@ -77,16 +78,14 @@ client.connect()
 
 
 def mqtt_publish_encoding(device_dict, topic_name):
-    """ This function is used to publish MQTT message and encode it by using LoRa node device's dictionary
+    """ This function is used to publish MQTT message as JSON string by using LoRa node device's dictionary
         @argument : device_dict (dictionary of node device)
                   : topic_name (topic name for mqtt publishing)
     """
+
     # publish all keys in dictionary with 1 string
     mqtt_topic = "{}".format(topic_name)
-    mqtt_msg = ""
-    for key, value in device_dict.items():
-        mqtt_msg =  mqtt_msg + "{}:{},".format(key, value)
-    mqtt_msg = mqtt_msg[0:-1]
+    mqtt_msg = ujson.dumps(device_dict)
     
     client.publish(topic=mqtt_topic, msg=mqtt_msg, qos=1, retain=False)
     client.check_msg()
